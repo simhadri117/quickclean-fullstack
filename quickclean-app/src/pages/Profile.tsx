@@ -8,6 +8,7 @@ import {
   Search, Bell, MapPin, Phone, Edit2, CheckCircle2, Clock, XCircle,
   Calendar, User, ChevronRight, TrendingUp, Save, Camera, CreditCard as CardIcon, Loader2
 } from 'lucide-react';
+import Skeleton from '../components/Skeleton';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
@@ -183,7 +184,40 @@ export default function Profile() {
     };
   }, [bookings]);
 
-  if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-800 font-bold text-2xl">Loading Dashboard...</div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-slate-50 p-4 gap-4">
+        {/* Sidebar Skeleton */}
+        <div className="hidden md:flex flex-col w-64 glass-card p-6 gap-4" style={{ background: 'var(--color-surface)', height: 'calc(100vh - 32px)' }}>
+          <Skeleton height="40px" width="100%" />
+          <div className="mt-8 flex flex-col gap-4">
+            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} height="48px" width="100%" borderRadius="16px" />)}
+          </div>
+        </div>
+        
+        {/* Main Content Skeleton */}
+        <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+          <div className="flex justify-between items-center px-4">
+            <Skeleton height="32px" width="240px" />
+            <Skeleton height="44px" width="44px" borderRadius="50%" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-4">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} height="140px" width="100%" borderRadius="24px" />)}
+          </div>
+          
+          <div className="px-4">
+            <Skeleton height="320px" width="100%" borderRadius="24px" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+            <Skeleton height="400px" width="100%" borderRadius="24px" />
+            <Skeleton height="400px" width="100%" borderRadius="24px" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col md:flex-row overflow-hidden selection:bg-pink-500/30">

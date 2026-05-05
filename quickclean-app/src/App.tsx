@@ -1,8 +1,10 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Suspense, lazy, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import Navigation from './components/Navigation';
+import AnimatedPage from './components/AnimatedPage';
 
 const Splash = lazy(() => import('./pages/Splash'));
 const Login = lazy(() => import('./pages/Login'));
@@ -52,17 +54,19 @@ function App() {
     <div className={`app-container ${!isAuthPage ? 'pb-nav' : ''}`}>
       {!isAuthPage && <Navigation />}
       <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/splash" element={<Splash />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/tracking" element={<Tracking />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/cleaner/dashboard" element={<CleanerDashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/" element={<Splash />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/splash" element={<AnimatedPage><Splash /></AnimatedPage>} />
+            <Route path="/login" element={<AnimatedPage><Login /></AnimatedPage>} />
+            <Route path="/home" element={<AnimatedPage><Home /></AnimatedPage>} />
+            <Route path="/tracking" element={<AnimatedPage><Tracking /></AnimatedPage>} />
+            <Route path="/checkout" element={<AnimatedPage><Checkout /></AnimatedPage>} />
+            <Route path="/cleaner/dashboard" element={<AnimatedPage><CleanerDashboard /></AnimatedPage>} />
+            <Route path="/profile" element={<AnimatedPage><Profile /></AnimatedPage>} />
+            <Route path="/admin" element={<AnimatedPage><AdminDashboard /></AnimatedPage>} />
+            <Route path="/" element={<AnimatedPage><Splash /></AnimatedPage>} />
+          </Routes>
+        </AnimatePresence>
       </Suspense>
     </div>
   );

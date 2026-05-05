@@ -1,15 +1,17 @@
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Calendar, CreditCard, User, Zap, Bell } from 'lucide-react';
-import { auth, db } from '../lib/firebase';
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Home, Calendar, CreditCard, User, Zap, Bell, Sun, Moon } from 'lucide-react';
+import { auth, db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { motion } from 'framer-motion';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Navigation() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
-  const [activeBookings, setActiveBookings] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -34,9 +36,6 @@ export default function Navigation() {
 
   const handleNavClick = (item: any) => {
     if (item.path === '/profile' && item.state) {
-      // If we're already on profile, we might need a way to trigger state change
-      // But for now, just navigate. Profile.tsx will handle the state via query or similar if we improvise it.
-      // For now, let's just navigate to the path.
       navigate(item.path, { state: { activeTab: item.state } });
     } else {
       navigate(item.path);
@@ -62,7 +61,7 @@ export default function Navigation() {
         borderBottom: '1px solid var(--color-border)', 
         position: 'sticky', 
         top: 0, 
-        background: 'rgba(255,255,255,0.9)', 
+        background: 'var(--color-surface)', 
         backdropFilter: 'blur(10px)', 
         zIndex: 100,
         height: '64px',
@@ -70,26 +69,26 @@ export default function Navigation() {
         alignItems: 'center'
       }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} 
+            onClick={() => navigate('/home')}
+          >
             <div style={{ width: '36px', height: '36px', background: 'var(--color-primary)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 4px 12px rgba(99,102,241,0.2)' }}>
               <Zap size={18} />
             </div>
             <span style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px', color: 'var(--color-text)' }}>QuickClean</span>
-          </div>
+          </motion.div>
 
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {user && (
-              <div 
-                className="hide-mobile"
-                style={{ 
-                  display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', 
-                  background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', 
-                  borderRadius: '100px', color: 'white', fontSize: '12px', fontWeight: '800'
-                }}
-              >
-                ✨ {user.points || 0} PTS
-              </div>
-            )}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleTheme}
+              style={{ padding: '8px', background: 'var(--color-primary-light)', border: 'none', borderRadius: '12px', color: 'var(--color-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </motion.button>
             <button style={{ padding: '8px', background: 'var(--color-primary-light)', border: 'none', borderRadius: '12px', color: 'var(--color-primary)', cursor: 'pointer' }}>
               <Bell size={20} />
             </button>
@@ -101,8 +100,9 @@ export default function Navigation() {
       {showBottomNav && (
         <div className="bottom-nav">
           {navItems.map((item, idx) => (
-            <button 
+            <motion.button 
               key={idx}
+              whileTap={{ scale: 0.9 }}
               className={`nav-item ${isActive(item.path, item.state) ? 'active' : ''}`}
               onClick={() => handleNavClick(item)}
             >
@@ -110,7 +110,7 @@ export default function Navigation() {
                 {item.icon}
               </div>
               <span>{item.label}</span>
-            </button>
+            </motion.button>
           ))}
         </div>
       )}

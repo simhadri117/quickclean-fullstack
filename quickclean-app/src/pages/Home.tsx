@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, ChevronRight, MapPin, Navigation } from 'lucide-react';
+import { Zap, ChevronRight, MapPin, Navigation, AlertCircle } from 'lucide-react';
 import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api';
 import { useMaps } from '../MapsProvider';
 import { auth, db } from '../lib/firebase';
 import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import Skeleton from '../components/Skeleton';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
 
@@ -447,114 +449,138 @@ export default function Home() {
       <div className="container" style={{ padding: '80px 24px 120px' }}>
         <h2 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px' }}>Instant Services</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px', marginTop: '40px' }}>
-          {servicesLoading
-            ? [1, 2, 3, 4].map(i => (
-                <div key={i} style={{ borderRadius: '24px', padding: '32px 24px', background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '12px', minHeight: '180px' }}>
-                  <div className="skeleton" style={{ width: '56px', height: '56px', borderRadius: '16px' }} />
-                  <div className="skeleton" style={{ width: '70%', height: '22px' }} />
-                  <div className="skeleton" style={{ width: '40%', height: '18px', marginTop: 'auto' }} />
-                </div>
-              ))
-            : services.map((service) => (
-            <div 
-              key={service.id}
-              onClick={() => setSelectedService(service.id)}
-              style={{
-                border: `2px solid ${selectedService === service.id ? 'var(--color-primary)' : 'rgba(0,0,0,0.05)'}`,
-                borderRadius: '24px', padding: '32px 24px',
-                background: selectedService === service.id ? '#F0FDFB' : 'white',
-                cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                transform: selectedService === service.id ? 'translateY(-4px)' : 'translateY(0)',
-                boxShadow: selectedService === service.id ? '0 20px 40px rgba(0, 179, 166, 0.15)' : '0 10px 30px rgba(0,0,0,0.03)',
-                display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
-              }}
-            >
-              {service.imageUrl ? (
-                <div style={{ width: '100%', height: '140px', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
-                  <img src={service.imageUrl} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '8px', fontSize: '18px' }}>
-                    {service.icon}
-                  </div>
-                </div>
-              ) : (
-                <div style={{ fontSize: '48px', marginBottom: '20px' }}>{service.icon}</div>
-              )}
-              <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px', color: 'var(--color-text)' }}>{service.name}</h3>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 'auto', paddingTop: '16px' }}>
-                <span className="font-bold text-primary" style={{ fontSize: '22px' }}>₹{service.price}</span>
-                {selectedService === service.id && (
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                    <ChevronRight size={18} />
-                  </div>
-                )}
+          {servicesLoading ? (
+            [1, 2, 3, 4].map(i => (
+              <div key={i} className="glass-card" style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <Skeleton height="140px" width="100%" borderRadius="16px" />
+                <Skeleton height="24px" width="70%" />
+                <Skeleton height="32px" width="40%" className="mt-auto" />
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <AnimatePresence>
+              {services.map((service, idx) => (
+                <motion.div 
+                  key={service.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  whileHover={{ y: -5, boxShadow: 'var(--shadow-lg)' }}
+                  onClick={() => setSelectedService(service.id)}
+                  style={{
+                    border: `2px solid ${selectedService === service.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                    borderRadius: '24px', padding: '32px 24px',
+                    background: selectedService === service.id ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                    cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
+                  }}
+                >
+                  {service.imageUrl ? (
+                    <div style={{ width: '100%', height: '140px', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
+                      <img src={service.imageUrl} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--color-surface)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '8px', fontSize: '18px' }}>
+                        {service.icon}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '48px', marginBottom: '20px' }}>{service.icon}</div>
+                  )}
+                  <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: 'var(--color-text)' }}>{service.name}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 'auto', paddingTop: '16px' }}>
+                    <span className="font-bold text-primary" style={{ fontSize: '22px', color: 'var(--color-primary)' }}>₹{service.price}</span>
+                    <motion.div 
+                      animate={{ x: selectedService === service.id ? 0 : 5, opacity: selectedService === service.id ? 1 : 0 }}
+                      style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}
+                    >
+                      <ChevronRight size={18} />
+                    </motion.div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
         </div>
       </div>
 
       {/* ─── Bottom Sheet for Booking (Mobile Optimized) ─── */}
-      {selectedService && (
-        <div className="bottom-sheet-overlay" onClick={() => setSelectedService(null)}>
-          <div className="bottom-sheet" onClick={(e) => e.stopPropagation()}>
-            {/* Handle bar */}
-            <div style={{ width: '40px', height: '4px', background: '#e2e8f0', borderRadius: '2px', margin: '0 auto 20px' }}></div>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--color-text)' }}>Review Booking</h3>
-              <button 
-                onClick={() => setSelectedService(null)}
-                style={{ background: 'var(--color-background)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '20px', cursor: 'pointer' }}
-              >
-                ×
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', background: 'var(--color-background)', padding: '16px', borderRadius: '20px', border: '1px solid var(--color-border)' }}>
-              <div style={{ fontSize: '40px', background: 'white', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                {selectedData?.icon}
-              </div>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ fontWeight: '800', fontSize: '18px', color: 'var(--color-text)' }}>{selectedData?.name}</h4>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-                  <span className="text-primary font-bold" style={{ fontSize: '18px' }}>₹{selectedData?.price}</span>
-                  <span style={{ color: 'var(--color-text-light)', fontSize: '14px', fontWeight: '600' }}>• 5-10 min arrival</span>
-                </div>
-              </div>
-            </div>
-
-            {address ? (
-              <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(99, 102, 241, 0.1)', marginBottom: '32px', display: 'flex', gap: '12px' }}>
-                <MapPin size={20} className="text-primary" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Cleaning Address</p>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)', lineHeight: '1.4' }}>{address}</p>
-                </div>
+      <AnimatePresence>
+        {selectedService && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bottom-sheet-overlay" 
+            onClick={() => setSelectedService(null)}
+          >
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="bottom-sheet" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Handle bar */}
+              <div style={{ width: '40px', height: '4px', background: 'var(--color-border)', borderRadius: '2px', margin: '0 auto 20px' }}></div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--color-text)', letterSpacing: '-0.5px' }}>Review Booking</h3>
                 <button 
-                  onClick={() => { setSelectedService(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: '700', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => setSelectedService(null)}
+                  style={{ background: 'var(--color-bg)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '20px', cursor: 'pointer', color: 'var(--color-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  Edit
+                  ×
                 </button>
               </div>
-            ) : (
-              <div style={{ background: '#FEF2F2', padding: '16px', borderRadius: '20px', border: '1px solid #FEE2E2', marginBottom: '32px', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ fontSize: '20px' }}>⚠️</span>
-                <p style={{ color: '#B91C1C', fontSize: '14px', fontWeight: '700' }}>Please set your address above to continue.</p>
-              </div>
-            )}
 
-            <button 
-              className="btn btn-primary" 
-              onClick={handleCleanNow} 
-              disabled={!address}
-              style={{ padding: '20px', fontSize: '18px', borderRadius: '20px' }}
-            >
-              Confirm & Book • ₹{selectedData?.price}
-            </button>
-          </div>
-        </div>
-      )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', background: 'var(--color-bg)', padding: '16px', borderRadius: '24px', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontSize: '40px', background: 'var(--color-surface)', width: '72px', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '18px', boxShadow: 'var(--shadow-sm)' }}>
+                  {selectedData?.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ fontWeight: '900', fontSize: '18px', color: 'var(--color-text)' }}>{selectedData?.name}</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                    <span className="font-black" style={{ fontSize: '20px', color: 'var(--color-primary)' }}>₹{selectedData?.price}</span>
+                    <span style={{ color: 'var(--color-text-light)', fontSize: '13px', fontWeight: '700' }}>• ⚡ Instant Arrival</span>
+                  </div>
+                </div>
+              </div>
+
+              {address ? (
+                <div style={{ background: 'var(--color-primary-light)', padding: '16px', borderRadius: '24px', border: '1px solid var(--color-primary-light)', marginBottom: '32px', display: 'flex', gap: '12px' }}>
+                  <MapPin size={20} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--color-primary)' }} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Cleaning Address</p>
+                    <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text)', lineHeight: '1.4' }}>{address}</p>
+                  </div>
+                  <button 
+                    onClick={() => { setSelectedService(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: '800', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Edit
+                  </button>
+                </div>
+              ) : (
+                <div style={{ background: 'var(--color-primary-light)', padding: '16px', borderRadius: '24px', border: '1px solid var(--color-error)', marginBottom: '32px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <AlertCircle size={20} style={{ color: 'var(--color-error)' }} />
+                  <p style={{ color: 'var(--color-error)', fontSize: '14px', fontWeight: '800' }}>Please set your address above to continue.</p>
+                </div>
+              )}
+
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="btn btn-primary" 
+                onClick={handleCleanNow} 
+                disabled={!address}
+                style={{ padding: '22px', fontSize: '20px', borderRadius: '24px', fontWeight: '900', boxShadow: 'var(--shadow-lg)' }}
+              >
+                Confirm & Book • ₹{selectedData?.price}
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
