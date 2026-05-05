@@ -1,0 +1,15 @@
+import * as admin from 'firebase-admin';
+
+const serviceAccount = {
+  projectId: "quickclean-808d9",
+  clientEmail: "firebase-adminsdk-fbsvc@quickclean-808d9.iam.gserviceaccount.com",
+  // Ensure lines breaks are preserved in the private key
+  privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDtkNF+crShPmHF\nc3LBux+ZzT2mJmrc9cF0fmLJUqCLTpTXlpQNuclQ8nQJjqNlkhn8zG8xivg+V1JL\nG5K+fSnqMTWqIGaY3uBBkVQh0kplUE3u/H8wmbHGl9/9kzlMm7FWAR2C+rr02mLm\nNw0QD2msf5B2Zouvr3ATuKNuKxCAolrEVH+2ey2auiRRC9vRoI/0l3jdMtT3ThZW\nbY2m/XGmZP21hCbIpSaQXmgzY0s3c+1h7bRS/kbt7DLGH8YV6PgFbAoDfMruPcxV\np/RJqmpbAjRaT/IoTLvVOslw08unBZQ/VSJYFtu19BUgSWwcAZJtmeVk+x8wXuSw\nZGbLtBgFAgMBAAECggEAA0RK8GQym60FIMP2DGslHUy3Nk7jVU23CIHcaRkbxnUH\nX732vaGT/rfDl+xzaFtaXbsp8RJ28dSD9/uiSI0Y3UGQxvNST3PXimjgyuSrZToP\neEo8k+lPioP4Ib9U7S31TrhBNNXh0ENYhmkalhTALUESNkgx6ST02f1fmFo7P3Zb\nsUJMUSMYUNT1GE7wWBYWYhufn9244isyFfT5etycGtp1oH58PZL7mUqOowYLOWwZ\nuAGgoVSg8V+bJ8q30IkAh35OYtwnCeixwt14tcDMaXiPlUV8L1Eo3pa77VHDiUT3\nCuReTKoNzfVM9Vrx8qPbF7HGdEW/M2ANiXAFwAjj2QKBgQD8FCwTmzrfpdWq/+NI\nR2S8O3W8SlZ2eorCqR6avQ6LWpRdVDB1CwG7LdFOUqGn0hPiK0RexHKJxAu9JimW\nWD2PXHKgM93abi/exZnmENnR7I9F/0DRD94Ob2O2KJea/3uiA/nigl8ifeaGZdN0\nXAB22RvxBNxX6jPna8kCULcv+wKBgQDxQtokACXfFAFbEuG3J5jeAfbcpctz/mNa\nnyURL1VX2QF2hafL26EKf14xoZ01Gliswn5uDiGl3p0n9j1tpvCIOJZ6oydR3Ef4\nmJFNDN4R712cXXuRz+XRfSHsEN+RoALBhtumQnikMdSY/uQn7oiDOKmokr2M5G8i\nHTCzbzdX/wKBgFYfsjt0orW8m/bTfFy6f7FMA1q0bzwFfBkr3NfzVd/Ir73/QJsM\niqff7I3871w+CysPq0lRhuyIvZX/TuAd/9JWPJd9gQPa96H+EymmgjUVxJGetw92\ng2CdMA0Ra1K6jQv6ncqEzmojZ7ptWcR8lnAEl2ZOSdYDn34mtkODPkM3AoGAGACG\noz5Ahkj/OYhPXGFcG/omDR2ReCC+0a0zitoiq3Kzao8xel6HTvwM6vMhKL9OQyG2\nYkyVnGLhT7B3vAj3tRWsItdIeiRoJJtJGVlGXpJpxbynJoKAYq8ISOwE0gARRh+c\nipXiWrN6ax4wpKhefG+OsW6n3PR8+e/dgHx4DRECgYEAw9UbwsA2UD0g/75SBBPw\nQbM2qKW20JdLWa1nmORAeqMU/gUuJUmeq6MI5kLEHKVd2yS0HuW4Yp5UClvG7rDY\nKkWnKOrmSE0ljUBMOywW31OzyzSzc/11gKXUPKlNpUF/jIXwg/bJC/nZd9snanbi\n6GUAU8XSc6hrrI7UFSaq2aY=\n-----END PRIVATE KEY-----\n",
+};
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+export const firebaseAdminAuth = admin.auth();
+export const db = admin.firestore();

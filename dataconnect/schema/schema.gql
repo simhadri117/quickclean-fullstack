@@ -1,0 +1,28 @@
+# SQL Schema for Firebase Data Connect (PostgreSQL)
+
+type User @table {
+  id: String! @primaryKey
+  email: String! @unique
+  name: String
+  phone: String
+  role: String @default(value: "customer")
+}
+
+type Service @table {
+  id: UUID! @default(expr: "uuid_generate_v4()") @primaryKey
+  name: String!
+  price: Float!
+  timeMins: Int!
+  icon: String
+}
+
+type Booking @table {
+  id: UUID! @default(expr: "uuid_generate_v4()") @primaryKey
+  userId: String!
+  serviceId: UUID!
+  status: String! @default(value: "PENDING")
+  address: String
+  lat: Float
+  lng: Float
+  createdAt: Timestamp! @default(expr: "request.time")
+}

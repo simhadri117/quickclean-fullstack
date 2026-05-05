@@ -1,0 +1,16 @@
+{
+  "name": "pms-root",
+  "version": "1.0.0",
+  "description": "QuickClean Root Configuration",
+  "private": true,
+  "scripts": {
+    "dev:app": "npm run dev --prefix quickclean-app",
+    "dev:backend": "npm run dev --prefix quickclean-backend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:app\"",
+    "seed": "cd quickclean-backend && npx prisma db seed",
+    "install:all": "npm install --prefix quickclean-app && npm install --prefix quickclean-backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

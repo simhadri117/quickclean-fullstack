@@ -1,0 +1,15 @@
+# Firebase Data Connect configuration
+specVersion: "v1alpha"
+serviceId: "quickclean-sql"
+location: "us-central1"
+schema:
+  source: "schema"
+  datasource:
+    postgresql:
+      # This points to a Google Cloud SQL instance
+      # For now, we use the Supabase SQL credentials in the backend logic
+      database: "postgres"
+      cloudSql:
+        instanceId: "quickclean-instance"
+connectorDirs:
+  - "connector"

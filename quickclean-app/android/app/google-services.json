@@ -1,0 +1,28 @@
+{
+  "project_info": {
+    "project_number": "440258467095",
+    "project_id": "quickclean-808d9",
+    "storage_bucket": "quickclean-808d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:440258467095:android:faa8d93253393840cc9352",
+        "android_client_info": {
+          "package_name": "com.quickclean.app"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "AIzaSyCh5mbuxSJjimz7pFOnj1cx9IVpAQj4dRo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
