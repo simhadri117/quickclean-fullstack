@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: quickclean-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node dist/index.js
+    rootDir: quickclean-backend
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 5000
+      - key: NODE_VERSION
+        value: 20
