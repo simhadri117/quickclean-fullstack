@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Suspense, lazy, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
@@ -70,6 +71,7 @@ function App() {
         </AnimatePresence>
       </Suspense>
       <Chatbot />
+      <Analytics />
     </div>
   );
 }
