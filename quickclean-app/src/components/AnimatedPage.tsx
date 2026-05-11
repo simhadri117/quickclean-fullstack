@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import type { Variants } from 'framer-motion';
+import type { ReactNode } from 'react';
 
 interface AnimatedPageProps {
   children: ReactNode;
 }
 
-const variants = {
+const variants: Variants = {
   initial: {
     opacity: 0,
     x: 20,
@@ -15,7 +16,7 @@ const variants = {
     x: 0,
     transition: {
       duration: 0.4,
-      ease: [0.25, 1, 0.5, 1], // Custom cubic-bezier for premium feel
+      ease: [0.25, 1, 0.5, 1] as [number, number, number, number], // Custom cubic-bezier for premium feel
     },
   },
   exit: {

@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { storage, db, auth } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { Upload, X, CheckCircle, File, Image as ImageIcon, Video, Loader2 } from 'lucide-react';
 
 interface FileUploadProgress {
@@ -50,53 +49,71 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
   const startUpload = async (uploadInfo: FileUploadProgress) => {
     if (!auth.currentUser) return;
 
-    const storagePath = `${folderName}/${auth.currentUser.uid}/${Date.now()}_${uploadInfo.file.name}`;
-    const storageRef = ref(storage, storagePath);
-    const uploadTask = uploadBytesResumable(storageRef, uploadInfo.file);
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'unsigned_preset';
+
+    const formData = new FormData();
+    formData.append('file', uploadInfo.file);
+    formData.append('upload_preset', uploadPreset);
 
     setIsUploading(true);
 
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploads(prev => prev.map(u => 
-          u.id === uploadInfo.id ? { ...u, progress } : u
-        ));
-      }, 
-      (error) => {
-        console.error("Upload failed", error);
-        setUploads(prev => prev.map(u => 
-          u.id === uploadInfo.id ? { ...u, status: 'error' } : u
-        ));
-      }, 
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        
-        // Save to Firestore
-        await addDoc(collection(db, collectionName), {
-          url: downloadURL,
-          path: storagePath,
-          name: uploadInfo.file.name,
-          type: uploadInfo.file.type,
-          userId: auth.currentUser?.uid,
-          createdAt: serverTimestamp(),
-        });
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, true);
 
-        setUploads(prev => prev.map(u => 
-          u.id === uploadInfo.id ? { ...u, status: 'completed', url: downloadURL } : u
-        ));
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = (event.loaded / event.total) * 100;
+          setUploads(prev => prev.map(u => 
+            u.id === uploadInfo.id ? { ...u, progress } : u
+          ));
+        }
+      };
 
-        // Check if all finished
-        setUploads(currentUploads => {
-          const completed = currentUploads.filter(u => u.status === 'completed');
-          if (completed.length === currentUploads.length && currentUploads.length > 0) {
-            onUploadComplete?.(completed.map(u => u.url!));
-            setIsUploading(false);
-          }
-          return currentUploads;
-        });
-      }
-    );
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          const downloadURL = response.secure_url;
+
+          // Save to Firestore
+          await addDoc(collection(db, collectionName), {
+            url: downloadURL,
+            publicId: response.public_id,
+            name: uploadInfo.file.name,
+            type: uploadInfo.file.type,
+            userId: auth.currentUser?.uid,
+            createdAt: serverTimestamp(),
+          });
+
+          setUploads(prev => prev.map(u => 
+            u.id === uploadInfo.id ? { ...u, status: 'completed', url: downloadURL } : u
+          ));
+
+          // Check if all finished
+          setUploads(currentUploads => {
+            const completed = currentUploads.filter(u => u.status === 'completed');
+            if (completed.length === currentUploads.length && currentUploads.length > 0) {
+              onUploadComplete?.(completed.map(u => u.url!));
+              setIsUploading(false);
+            }
+            return currentUploads;
+          });
+        } else {
+          throw new Error('Upload failed');
+        }
+      };
+
+      xhr.onerror = () => { throw new Error('Network error'); };
+      xhr.send(formData);
+
+    } catch (error) {
+      console.error("Cloudinary Upload failed", error);
+      setUploads(prev => prev.map(u => 
+        u.id === uploadInfo.id ? { ...u, status: 'error' } : u
+      ));
+      setIsUploading(false);
+    }
   };
 
   const removeUpload = (id: string) => {

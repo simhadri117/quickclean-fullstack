@@ -39,11 +39,11 @@ router.post('/razorpay/create-order', authenticate, async (req: AuthRequest, res
         if (!booking || booking.userId !== userId) {
             console.warn(`[Payments] Booking ${bookingId} not found or unauthorized for user ${userId}. FALLING BACK TO MOCK MODE.`);
             // Instead of 404ing, we synthesize a mock booking so the UI doesn't break for the tester
-            booking = { id: bookingId, userId, service: { price: 500, name: 'Service (Mock Recovery)' } };
+            booking = { id: bookingId, userId, service: { price: 149, name: 'Quick Sweep & Mop' } };
         }
     } else {
         // Synthesize meta for mock booking
-        booking = { id: bookingId, userId, service: { price: 500, name: 'Mock Service' } };
+        booking = { id: bookingId, userId, service: { price: 149, name: 'Quick Sweep & Mop' } };
     }
 
     if (!razorpay || isDummyKey) {
@@ -57,7 +57,7 @@ router.post('/razorpay/create-order', authenticate, async (req: AuthRequest, res
     }
 
     // Calculate dynamic amount based on cart properties
-    const baseAmount = booking.service ? booking.service.price : 500;
+    const baseAmount = booking.service ? booking.service.price : 149;
     const totalAmount = baseAmount + (tip || 0) - (discountApplied || 0);
 
     const options = {

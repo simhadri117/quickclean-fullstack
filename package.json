@@ -4,13 +4,18 @@
   "description": "QuickClean Root Configuration",
   "private": true,
   "scripts": {
-    "dev:app": "npm run dev --prefix quickclean-app",
     "dev:backend": "npm run dev --prefix quickclean-backend",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:app\"",
-    "seed": "cd quickclean-backend && npx prisma db seed",
-    "install:all": "npm install --prefix quickclean-app && npm install --prefix quickclean-backend"
+    "dev:web": "npm run dev --prefix quickclean-web",
+    "dev:app": "npm run dev --prefix quickclean-app",
+    "dev:cleaner": "npm run dev --prefix quickclean-cleaner",
+    "dev:admin": "npm run dev --prefix quickclean-admin",
+    "dev": "concurrently -n \"BACKEND,WEB,APP,CLEANER,ADMIN\" -c \"bgBlue,bgGreen,bgMagenta,bgYellow,bgCyan\" \"npm run dev:backend\" \"npm run dev:web\" \"npm run dev:app\" \"npm run dev:cleaner\" \"npm run dev:admin\"",
+    "install:all": "npm install && npm install --prefix quickclean-backend && npm install --prefix quickclean-web && npm install --prefix quickclean-app && npm install --prefix quickclean-cleaner && npm install --prefix quickclean-admin"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "mongodb": "^7.2.0"
   }
 }

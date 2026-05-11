@@ -1,0 +1,61 @@
+
+
+services:
+  # Backend API
+  backend:
+    build: ./quickclean-backend
+    container_name: quickclean-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./quickclean-backend/.env
+    volumes:
+      - ./quickclean-backend:/app
+      - /app/node_modules # Don't overwrite node_modules in container
+    restart: always
+
+  # Web Storefront (Next.js)
+  web:
+    build: ./quickclean-web
+    container_name: quickclean-web
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./quickclean-web/.env.local
+    volumes:
+      - ./quickclean-web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    restart: always
+
+  # Customer App (Vite)
+  app:
+    build: ./quickclean-app
+    container_name: quickclean-app
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./quickclean-app/.env
+    volumes:
+      - ./quickclean-app:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: always
+
+  # Cleaner App (Vite)
+  cleaner:
+    build: ./quickclean-cleaner
+    container_name: quickclean-cleaner
+    ports:
+      - "5174:5174"
+    env_file:
+      - ./quickclean-cleaner/.env
+    volumes:
+      - ./quickclean-cleaner:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: always

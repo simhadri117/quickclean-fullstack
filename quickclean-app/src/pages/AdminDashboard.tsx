@@ -11,6 +11,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
+import MetabaseEmbed from '../components/MetabaseEmbed';
 
 interface Stats {
   totalRevenue: number;
@@ -144,6 +145,20 @@ const AdminDashboard: React.FC = () => {
             icon={<Activity size={24} className="text-fuchsia-500" />}
             color="fuchsia"
           />
+        </div>
+        
+        {/* Metabase Live Intel Section */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+             <div className="flex items-center gap-2">
+                <div className="w-2 h-8 bg-primary rounded-full"></div>
+                <h3 className="text-xl font-black text-gray-900 tracking-tight">Live Platform Intel</h3>
+             </div>
+             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full">
+               Powered by Metabase
+             </p>
+          </div>
+          <MetabaseEmbed dashboardId={1} height="500px" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

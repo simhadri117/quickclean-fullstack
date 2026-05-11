@@ -31,6 +31,13 @@ interface Service {
   imageUrl?: string;
 }
 
+const DEFAULT_SERVICES: Service[] = [
+  { id: 'sweep-mop', name: 'Quick Sweep & Mop', price: 149, timeMins: 5, icon: '🧹', imageUrl: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=400' },
+  { id: 'kitchen', name: 'Kitchen Regular', price: 199, timeMins: 10, icon: '✨', imageUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=400' },
+  { id: 'bathroom', name: 'Bathroom Wash', price: 199, timeMins: 10, icon: '🚿', imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400' },
+  { id: 'party', name: 'Post-Party Cleanup', price: 499, timeMins: 30, icon: '🎉', imageUrl: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&q=80&w=400' }
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const [services, setServices] = useState<Service[]>([]);
@@ -77,40 +84,44 @@ export default function Home() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Add a 5 second timeout to getDocs to prevent infinite hanging
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Firestore connection timeout')), 5000)
+          setTimeout(() => reject(new Error('Firestore timeout')), 3000)
         );
         
-        let snapshot = await Promise.race([
+        const snapshot = await Promise.race([
           getDocs(collection(db, 'services')),
           timeoutPromise
         ]) as any;
         
-        // Auto-seed if empty
-        if (snapshot.empty) {
-          console.log('Seeding default services...');
-          const defaultServices = [
-            { name: 'Quick Sweep & Mop', price: 149, timeMins: 5, icon: '🧹', imageUrl: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=400' },
-            { name: 'Kitchen Regular', price: 199, timeMins: 10, icon: '✨', imageUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=400' },
-            { name: 'Bathroom Wash', price: 199, timeMins: 10, icon: '🚿', imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400' },
-            { name: 'Post-Party Cleanup', price: 499, timeMins: 30, icon: '🎉', imageUrl: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&q=80&w=400' }
-          ];
-          for (const s of defaultServices) {
-            await addDoc(collection(db, 'services'), s);
-          }
-          snapshot = await getDocs(collection(db, 'services'));
+        if (snapshot && !snapshot.empty) {
+          const data = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Service));
+          setServices(data);
+        } else {
+          // If empty, use default and attempt to seed in background
+          console.log('Using default services (empty db)');
+          setServices(DEFAULT_SERVICES);
+          seedDatabase();
         }
-
-        const data = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Service));
-        setServices(data);
-        setServicesLoading(false);
       } catch (err) {
-        console.error('Failed to load services from Firestore:', err);
-        setServices([]);
+        console.warn('Firestore fetch failed, using local fallback:', err);
+        setServices(DEFAULT_SERVICES);
+      } finally {
         setServicesLoading(false);
       }
     };
+
+    const seedDatabase = async () => {
+      try {
+        for (const s of DEFAULT_SERVICES) {
+          // Check if it exists by name to avoid duplicates if possible, or just add
+          await addDoc(collection(db, 'services'), { ...s, id: undefined });
+        }
+        console.log('Seeded database successfully');
+      } catch (e) {
+        console.error('Background seeding failed:', e);
+      }
+    };
+
     fetchServices();
       
     if ("geolocation" in navigator) {
@@ -242,9 +253,19 @@ export default function Home() {
         return;
       }
       
+      const selectedData = services.find(s => s.id === selectedService);
+      if (!selectedData) {
+        throw new Error("Selected service not found in catalog.");
+      }
+      
       const newBooking = {
         userId: auth.currentUser.uid,
         serviceId: selectedService,
+        service: {
+          name: selectedData.name,
+          price: selectedData.price,
+          icon: selectedData.icon
+        },
         address: address,
         lat: mapPos.lat,
         lng: mapPos.lng,
@@ -255,6 +276,8 @@ export default function Home() {
       
       const docRef = await addDoc(collection(db, 'bookings'), newBooking);
       localStorage.setItem('bookingId', docRef.id);
+      localStorage.setItem('lockedPrice', selectedData.price.toString());
+      localStorage.setItem('lockedServiceName', selectedData.name);
       navigate('/tracking');
     } catch (e: any) {
       console.error(e);
@@ -280,9 +303,11 @@ export default function Home() {
           position: 'absolute', animationDelay: '0.4s'
         }}></div>
         
-        <Zap size={64} color="white" style={{ zIndex: 10, animation: 'pulse 1s infinite alternate' }} />
+        <div style={{ width: '80px', height: '80px', background: 'white', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 10, animation: 'pulse 1s infinite alternate', padding: '8px' }}>
+          <img src="/logo192.png" alt="QuickClean" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        </div>
         <h2 style={{ color: 'white', marginTop: '32px', zIndex: 10, fontWeight: 800, fontSize: '32px' }}>Dispatching Cleaner...</h2>
-        <p style={{ color: 'rgba(255,255,255,0.8)', zIndex: 10, fontWeight: 600, fontSize: '18px', marginTop: '8px' }}>Arriving in under 5 minutes ⚡</p>
+        <p style={{ color: 'rgba(255,255,255,0.8)', zIndex: 10, fontWeight: 600, fontSize: '18px', marginTop: '8px' }}>Arriving in under 10 minutes ⚡</p>
         <style>{`
           @keyframes ping { 75%, 100% { transform: scale(2.5); opacity: 0; } }
           @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); filter: brightness(1.2); } }
@@ -315,7 +340,7 @@ export default function Home() {
             letterSpacing: '-1px', 
             color: '#F8FAFC' 
           }}>
-            Premium home cleaning, <br/>delivered in <span style={{ color: 'var(--color-secondary)', textShadow: '0 0 40px rgba(245, 158, 11, 0.4)' }}>5 minutes.</span>
+            Premium home cleaning <br/>in <span style={{ color: 'var(--color-secondary)', textShadow: '0 0 40px rgba(245, 158, 11, 0.4)' }}>10 minutes.</span>
           </h1>
           
           <div style={{ 
@@ -527,13 +552,13 @@ export default function Home() {
                 <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--color-text)', letterSpacing: '-0.5px' }}>Review Booking</h3>
                 <button 
                   onClick={() => setSelectedService(null)}
-                  style={{ background: 'var(--color-bg)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '20px', cursor: 'pointer', color: 'var(--color-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ background: 'var(--color-background)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '20px', cursor: 'pointer', color: 'var(--color-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   ×
                 </button>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', background: 'var(--color-bg)', padding: '16px', borderRadius: '24px', border: '1px solid var(--color-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', background: 'var(--color-background)', padding: '16px', borderRadius: '24px', border: '1px solid var(--color-border)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '40px', background: 'var(--color-surface)', width: '72px', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '18px', boxShadow: 'var(--shadow-sm)' }}>
                   {selectedData?.icon}
                 </div>
@@ -541,7 +566,7 @@ export default function Home() {
                   <h4 style={{ fontWeight: '900', fontSize: '18px', color: 'var(--color-text)' }}>{selectedData?.name}</h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
                     <span className="font-black" style={{ fontSize: '20px', color: 'var(--color-primary)' }}>₹{selectedData?.price}</span>
-                    <span style={{ color: 'var(--color-text-light)', fontSize: '13px', fontWeight: '700' }}>• ⚡ Instant Arrival</span>
+                    <span style={{ color: 'var(--color-text)', opacity: 0.7, fontSize: '13px', fontWeight: '800' }}>• ⚡ Instant Arrival</span>
                   </div>
                 </div>
               </div>
@@ -551,7 +576,7 @@ export default function Home() {
                   <MapPin size={20} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--color-primary)' }} />
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Cleaning Address</p>
-                    <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text)', lineHeight: '1.4' }}>{address}</p>
+                    <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--color-text)', lineHeight: '1.4' }}>{address}</p>
                   </div>
                   <button 
                     onClick={() => { setSelectedService(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}

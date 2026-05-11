@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, CheckCircle, CreditCard, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 
@@ -71,13 +72,24 @@ export default function Checkout() {
           });
           const data = await res.json();
           if (res.ok) {
+            console.log('💳 Checkout: Booking status data:', data);
             if (data.service) {
+              console.log('✅ Checkout: Using price from booking document:', data.service.price);
               setService(data.service);
             } else {
-              const sRes = await fetch('/api/services');
-              const services = await sRes.json();
-              const found = services.find((s: any) => s.id === data.serviceId);
-              setService(found);
+              // Fallback to localStorage if API is slow or missing service object
+              const localPrice = localStorage.getItem('lockedPrice');
+              const localName = localStorage.getItem('lockedServiceName');
+              if (localPrice && localName) {
+                console.log('📦 Checkout: Using price from localStorage fallback:', localPrice);
+                setService({ name: localName, price: parseInt(localPrice) });
+              } else {
+                console.log('⚠️ Checkout: Service missing everywhere, falling back to catalog lookup');
+                const sRes = await fetch('/api/services');
+                const services = await sRes.json();
+                const found = services.find((s: any) => s.id === data.serviceId);
+                setService(found);
+              }
             }
           }
         } catch (err) {
@@ -252,8 +264,8 @@ export default function Checkout() {
 
   if (isPaid) {
     return (
-      <div className="page p-6" style={{ 
-        background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, #0f172a 100%)', 
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="page p-6" style={{ 
+        background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-bg) 100%)', 
         display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh',
         animation: 'fadeIn 0.5s ease-out', position: 'relative', overflow: 'hidden'
       }}>
@@ -264,8 +276,8 @@ export default function Checkout() {
         <div style={{ zIndex: 10, width: '100%', maxWidth: '440px', marginTop: 'auto', marginBottom: 'auto' }}>
           {/* Glass Ticket Wrapper */}
           <div style={{
-            background: 'white', borderRadius: '32px', padding: '40px 32px 32px',
-            boxShadow: '0 40px 80px rgba(0,0,0,0.4)', position: 'relative',
+            background: 'var(--color-surface)', borderRadius: '32px', padding: '40px 32px 32px',
+            boxShadow: 'var(--shadow-lg)', position: 'relative',
             animation: 'slideUpBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both'
           }}>
             {/* The Floating Checkmark Badge */}
@@ -288,7 +300,7 @@ export default function Checkout() {
             <div style={{ height: '2px', background: 'transparent', borderTop: '2px dashed var(--color-border)', marginBottom: '32px' }}></div>
 
             {/* Receipt Details Breakdown */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: '#F8FAFC', padding: '20px', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--color-bg)', padding: '20px', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '24px' }}>
               <div className="flex justify-between items-center text-sm">
                 <span style={{ color: 'var(--color-text-light)' }}>{service?.name || 'Cleaning Service'}</span>
                 <span style={{ fontWeight: 700 }}>₹{baseAmount}</span>
@@ -321,7 +333,7 @@ export default function Checkout() {
               </div>
             </div>
             
-            <div style={{ marginTop: '40px', background: '#F8FAFC', borderRadius: '16px', padding: '16px', textAlign: 'center', border: '1px solid rgba(0,0,0,0.04)' }}>
+            <div style={{ marginTop: '40px', background: 'var(--color-bg)', borderRadius: '16px', padding: '16px', textAlign: 'center', border: '1px solid var(--color-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: 'var(--color-primary-dark)', fontWeight: '700', fontSize: '15px' }}>
                 <Loader2 size={20} style={{ animation: 'spin 2s linear infinite' }} />
                 Redirecting magical experience...
@@ -337,16 +349,16 @@ export default function Checkout() {
           @keyframes pulse { 0% { opacity: 0.5; transform: scale(1); } 100% { opacity: 1; transform: scale(1.2); } }
           @keyframes spin { 100% { transform: rotate(360deg); } }
         `}</style>
-      </div>
+      </motion.div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="page" style={{ background: '#F8FAFC', paddingBottom: '32px' }}>
-        <div style={{ background: 'var(--color-border)', height: '200px', width: '100%', marginBottom: '-40px', animation: 'shimmer 2s infinite linear', backgroundImage: 'linear-gradient(to right, #e2e8f0 4%, #f1f5f9 25%, #e2e8f0 36%)', backgroundSize: '1000px 100%' }}></div>
+      <div className="page" style={{ background: 'var(--color-bg)', paddingBottom: '32px' }}>
+        <div style={{ background: 'var(--color-border)', height: '200px', width: '100%', marginBottom: '-40px', animation: 'shimmer 2s infinite linear', backgroundImage: 'linear-gradient(to right, var(--color-border) 4%, var(--color-surface) 25%, var(--color-border) 36%)', backgroundSize: '1000px 100%' }}></div>
         <div style={{ padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ height: '300px', background: 'white', borderRadius: '24px', boxShadow: 'var(--shadow-sm)' }}></div>
+          <div style={{ height: '300px', background: 'var(--color-surface)', borderRadius: '24px', boxShadow: 'var(--shadow-sm)' }}></div>
           <div style={{ height: '200px', background: 'white', borderRadius: '24px', boxShadow: 'var(--shadow-sm)' }}></div>
         </div>
       </div>
@@ -489,9 +501,9 @@ export default function Checkout() {
 
 
   return (
-    <div className="page" style={{ 
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="page" style={{ 
       paddingBottom: '32px', position: 'relative', overflowX: 'hidden', overflowY: 'auto',
-      background: '#F8FAFC'
+      background: 'var(--color-bg)'
     }}>
       {showUpiDrawer && <UpiSimulationDrawer />}
       {showQrCode && <QrCodeModal />}
@@ -507,11 +519,16 @@ export default function Checkout() {
         {/* Left Column: Flow & Details */}
         <div className="col-main" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* Invoice Card */}
-        <div className="glass-card" style={{ background: 'white', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.04)' }}>
+        <div className="glass-card" style={{ background: 'var(--color-surface)', padding: '24px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-border)' }}>
           <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-light)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Order Summary</h3>
           
           <div className="flex justify-between items-center mb-3">
-            <span className="font-semibold" style={{ color: 'var(--color-text)' }}>{service ? service.name : 'Unknown Service'}</span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span className="font-semibold" style={{ color: 'var(--color-text)' }}>{service ? service.name : 'Unknown Service'}</span>
+              <span style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <ShieldCheck size={12} /> PRICE LOCKED
+              </span>
+            </div>
             <span className="font-bold">₹{baseAmount}</span>
           </div>
           
@@ -533,8 +550,8 @@ export default function Checkout() {
                   onClick={() => setSelectedTip(tip === selectedTip ? null : tip)}
                   style={{ 
                     flex: '1', padding: '10px 0', fontSize: '14px', fontWeight: '600', borderRadius: '12px',
-                    background: selectedTip === tip ? 'var(--color-primary-light)' : 'white',
-                    color: selectedTip === tip ? 'var(--color-primary-dark)' : 'var(--color-text-light)',
+                    background: selectedTip === tip ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                    color: selectedTip === tip ? 'var(--color-primary)' : 'var(--color-text)',
                     border: `1px solid ${selectedTip === tip ? 'var(--color-primary)' : 'var(--color-border)'}`,
                     cursor: 'pointer', transition: 'all 0.2s',
                     transform: selectedTip === tip ? 'scale(1.05)' : 'scale(1)'
@@ -587,7 +604,7 @@ export default function Checkout() {
             <span className="font-bold text-text-light" style={{ fontSize: '14px' }}>Grand Total</span>
             <div style={{ textAlign: 'right' }}>
               <h2 style={{ fontSize: '32px', lineHeight: '1', color: 'var(--color-primary-dark)', margin: 0 }}>₹{totalAmount}</h2>
-              <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: '700' }}>NO HIDDEN FEES</span>
+              <span style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: '800' }}>✓ ALL-INCLUSIVE PRICE</span>
             </div>
           </div>
         </div>
@@ -597,7 +614,7 @@ export default function Checkout() {
         {/* Right Column: Payment & Sticky Action */}
         <div className="col-side" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* Payment Methods */}
-          <div style={{ background: 'white', borderRadius: '24px', padding: '24px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-border)' }}>
+          <div style={{ background: 'var(--color-surface)', borderRadius: '24px', padding: '24px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-border)' }}>
             <h3 style={{ fontSize: '16px', color: 'var(--color-text-light)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Payment Method</h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -615,7 +632,7 @@ export default function Checkout() {
               ].map(method => (
                 <div key={method.id} style={{
                   border: `2px solid ${selectedMethod === method.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                  background: selectedMethod === method.id ? '#F0FDFB' : 'white',
+                  background: selectedMethod === method.id ? 'var(--color-primary-light)' : 'var(--color-surface)',
                   borderRadius: '16px', overflow: 'hidden',
                   transition: 'all 0.2s',
                   transform: selectedMethod === method.id ? 'scale(1.02)' : 'scale(1)',
@@ -655,7 +672,7 @@ export default function Checkout() {
           </div>
 
           {/* Rate Service Section */}
-          <div style={{ background: 'white', borderRadius: '24px', padding: '20px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-border)', textAlign: 'center' }}>
+          <div style={{ background: 'var(--color-surface)', borderRadius: '24px', padding: '20px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-border)', textAlign: 'center' }}>
             <p className="font-semibold text-sm mb-3">Rate your cleaner's service</p>
             <div className="flex justify-center gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -675,7 +692,7 @@ export default function Checkout() {
           </div>
 
           {/* Secure Payment Action Module */}
-          <div className="glass-card" style={{ background: 'rgba(255,255,255,0.9)', padding: '24px', borderRadius: '24px', border: '1px solid var(--color-border)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
+          <div className="glass-card" style={{ background: 'var(--color-surface)', padding: '24px', borderRadius: '24px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
             <button 
               className="btn btn-primary" 
               onClick={handlePay} 
@@ -705,6 +722,6 @@ export default function Checkout() {
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       `}</style>
-    </div>
+    </motion.div>
   );
 }

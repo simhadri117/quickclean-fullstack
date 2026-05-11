@@ -5,6 +5,7 @@ import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import Navigation from './components/Navigation';
 import AnimatedPage from './components/AnimatedPage';
+import Chatbot from './components/Chatbot';
 
 const Splash = lazy(() => import('./pages/Splash'));
 const Login = lazy(() => import('./pages/Login'));
@@ -68,8 +69,10 @@ function App() {
           </Routes>
         </AnimatePresence>
       </Suspense>
+      <Chatbot />
     </div>
   );
 }
 
 export default App;
+

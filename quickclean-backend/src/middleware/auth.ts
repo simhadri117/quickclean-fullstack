@@ -28,7 +28,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     }
 
     // 2. Fallback to Supabase token verification (For Phone/Email OTP sessions)
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await (supabase.auth as any).getUser(token);
 
     if (error || !user) {
       return res.status(401).json({ error: 'Unauthorized: Invalid token for both Firebase and Supabase' });

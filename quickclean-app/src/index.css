@@ -8,7 +8,7 @@
   --color-background: #F8FAFC;
   --color-surface: rgba(255, 255, 255, 0.85); /* Glass surface */
   --color-text: #0F172A; /* Deep Slate */
-  --color-text-light: #64748B;
+  --color-text-light: #475569; /* Darker Slate for better light mode contrast */
   --color-border: rgba(226, 232, 240, 0.8);
   --color-success: #10B981;
   
@@ -32,9 +32,9 @@
   --color-primary-light: rgba(129, 140, 248, 0.1);
   --color-secondary: #FBBF24;
   --color-background: #0F172A;
-  --color-surface: rgba(30, 41, 59, 0.85);
-  --color-text: #F8FAFC;
-  --color-text-light: #94A3B8;
+  --color-surface: rgba(15, 23, 42, 0.9); /* Deeper background for glass effects */
+  --color-text: #FFFFFF; /* Pure White for maximum contrast */
+  --color-text-light: #CBD5E1; /* Brighter Slate for secondary text */
   --color-border: rgba(51, 65, 85, 0.8);
   --color-success: #34D399;
   --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -350,11 +350,12 @@ p { font-size: 16px; color: var(--color-text); }
 
 .bottom-sheet {
   width: 100%;
-  background: white;
+  background: var(--color-background);
+  border-top: 1px solid var(--color-border);
   border-radius: 32px 32px 0 0;
   padding: 24px;
   padding-bottom: calc(32px + var(--safe-area-bottom));
-  box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.2);
   transform: translateY(0);
   animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }

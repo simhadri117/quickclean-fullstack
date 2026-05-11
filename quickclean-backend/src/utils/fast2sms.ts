@@ -19,11 +19,12 @@ export const sendFast2SMS = async (phone: string, otp: string) => {
       }
     });
 
-    if (response.data.return) {
+    const data = response.data as any;
+    if (data.return) {
       console.log(`✅ Real SMS sent to ${phone} via Fast2SMS`);
       return true;
     } else {
-      console.error('❌ Fast2SMS error:', response.data.message);
+      console.error('❌ Fast2SMS error:', data.message);
       return false;
     }
   } catch (error: any) {

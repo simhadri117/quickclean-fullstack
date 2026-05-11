@@ -85,7 +85,7 @@ export default function CleanerHome({ user }: { user: User }) {
     const q = query(
       collection(db, 'bookings'),
       where('cleanerId', '==', user.uid),
-      where('status', 'in', ['ACCEPTED', 'confirmed', 'in_progress'])
+      where('status', 'in', ['ASSIGNED', 'EN_ROUTE', 'ACCEPTED', 'confirmed', 'in_progress'])
     );
 
     const unsub = onSnapshot(q, async (snap) => {
@@ -136,7 +136,7 @@ export default function CleanerHome({ user }: { user: User }) {
   useEffect(() => {
     const q = query(
       collection(db, 'bookings'),
-      where('status', '==', 'pending')
+      where('status', 'in', ['FINDING_WORKER', 'FINDING_CLEANER'])
     );
 
     const unsub = onSnapshot(q, async (snap) => {
@@ -258,7 +258,8 @@ export default function CleanerHome({ user }: { user: User }) {
     try {
       await updateDoc(doc(db, 'bookings', jobId), {
         cleanerId: user.uid,
-        status: 'ACCEPTED',
+        workerId: user.uid,
+        status: 'ASSIGNED',
       });
       await updateDoc(doc(db, 'cleaners', user.uid), { activeBookingId: jobId });
     } catch (err) { console.error(err); }
@@ -269,7 +270,7 @@ export default function CleanerHome({ user }: { user: User }) {
     if (!activeJob) return;
     setUpdatingJob(true);
     try {
-      await updateDoc(doc(db, 'bookings', activeJob.id), { status: 'in_progress' });
+      await updateDoc(doc(db, 'bookings', activeJob.id), { status: 'EN_ROUTE' });
     } catch (err) { console.error(err); }
     finally { setUpdatingJob(false); }
   };
@@ -279,11 +280,12 @@ export default function CleanerHome({ user }: { user: User }) {
     setUpdatingJob(true);
     try {
       const payout = Math.round(activeJob.servicePrice * 0.7);
-      await updateDoc(doc(db, 'bookings', activeJob.id), { status: 'completed' });
+      await updateDoc(doc(db, 'bookings', activeJob.id), { status: 'COMPLETED' });
       await updateDoc(doc(db, 'cleaners', user.uid), {
         activeBookingId: null,
         completedJobs: (profile?.completedJobs || 0) + 1,
         earnings: (profile?.earnings || 0) + payout,
+        lastJobPhotos: (activeJob as any).photos || []
       });
     } catch (err) { console.error(err); }
     finally { setUpdatingJob(false); }
@@ -416,6 +418,21 @@ export default function CleanerHome({ user }: { user: User }) {
                 <MapPin size={16} style={{ color: '#ec4899', flexShrink: 0, marginTop: 2 }} />
                 <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>{activeJob.address}</p>
               </div>
+
+              {activeJob.status === 'in_progress' && (
+                <div style={{ marginBottom: 20 }}>
+                   <p style={{ fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.4)', marginBottom: 10, textTransform: 'uppercase' }}>📸 Proof of Work</p>
+                   <MediaUploader 
+                    collectionName="bookings" 
+                    folderName={`proof_${activeJob.id}`} 
+                    onUploadComplete={async (urls) => {
+                      await updateDoc(doc(db, 'bookings', activeJob.id), {
+                        photos: urls
+                      });
+                    }}
+                  />
+                </div>
+              )}
 
               {activeJob.status === 'ACCEPTED' && (
                 <button id="start-job-btn" onClick={startJob} disabled={updatingJob} className="btn btn-green" style={{ width: '100%' }}>

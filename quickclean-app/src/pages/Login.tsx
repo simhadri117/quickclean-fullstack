@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, ArrowRight, CheckCircle, RefreshCcw, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -148,7 +149,7 @@ export default function Login() {
 
   return (
     <div className="page" style={{ 
-      display: 'flex', flexDirection: 'row', minHeight: '100vh', background: 'white'
+      display: 'flex', flexDirection: 'row', minHeight: '100vh', background: 'var(--color-bg)'
     }}>
       {/* Invisible ReCaptcha Container */}
       <div id="recaptcha-container"></div>
@@ -197,7 +198,7 @@ export default function Login() {
       {/* Right Login Form Side */}
       <div style={{ 
         flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', 
-        padding: '24px', background: 'linear-gradient(135deg, #F0Fdfa 0%, #E2E8F0 100%)', position: 'relative'
+        padding: '24px', background: 'var(--color-bg)', position: 'relative'
       }}>
         <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '40px 32px', zIndex: 1, position: 'relative' }}>
           
@@ -212,8 +213,8 @@ export default function Login() {
             {!isOtpStep && (
               <>
                 <div style={{ display: 'flex', background: 'rgba(99, 102, 241, 0.08)', padding: '6px', borderRadius: '16px', marginBottom: '32px' }}>
-                  <button type="button" onClick={() => setRole('user')} style={{ flex: 1, padding: '12px', background: role === 'user' ? 'white' : 'transparent', borderRadius: '12px', fontWeight: '700', fontSize: '16px', color: role === 'user' ? 'var(--color-primary-dark)' : 'var(--color-text-light)', boxShadow: role === 'user' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none', border: 'none', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)' }}>Customer</button>
-                  <button type="button" onClick={() => setRole('cleaner')} style={{ flex: 1, padding: '12px', background: role === 'cleaner' ? 'white' : 'transparent', borderRadius: '12px', fontWeight: '700', fontSize: '16px', color: role === 'cleaner' ? 'var(--color-primary-dark)' : 'var(--color-text-light)', boxShadow: role === 'cleaner' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none', border: 'none', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)' }}>Partner</button>
+                  <button type="button" onClick={() => setRole('user')} style={{ flex: 1, padding: '12px', background: role === 'user' ? 'var(--color-surface)' : 'transparent', borderRadius: '12px', fontWeight: '700', fontSize: '16px', color: role === 'user' ? 'var(--color-primary)' : 'var(--color-text-light)', boxShadow: role === 'user' ? 'var(--shadow-sm)' : 'none', border: 'none', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)' }}>Customer</button>
+                  <button type="button" onClick={() => setRole('cleaner')} style={{ flex: 1, padding: '12px', background: role === 'cleaner' ? 'var(--color-surface)' : 'transparent', borderRadius: '12px', fontWeight: '700', fontSize: '16px', color: role === 'cleaner' ? 'var(--color-primary)' : 'var(--color-text-light)', boxShadow: role === 'cleaner' ? 'var(--shadow-sm)' : 'none', border: 'none', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)' }}>Partner</button>
                 </div>
                 <div className="desktop-only" style={{ width: '64px', height: '64px', background: 'var(--color-primary-light)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--color-primary-dark)', boxShadow: '0 8px 16px rgba(99, 102, 241, 0.15)' }}>
                   <Phone size={32} />
@@ -242,14 +243,17 @@ export default function Login() {
 
             <form onSubmit={handleContinue} className="flex flex-col gap-6">
               {!isOtpStep ? (
-                  <div style={{ 
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ 
                     display: 'flex', alignItems: 'center', 
-                    background: 'rgba(255,255,255,0.95)', padding: '20px 24px',
-                    borderRadius: '20px', border: `2px solid ${phone.length === 10 ? 'var(--color-success)' : 'rgba(99, 102, 241, 0.2)'}`,
+                    background: 'var(--color-surface)', padding: '20px 24px',
+                    borderRadius: '20px', border: `2px solid ${phone.length === 10 ? 'var(--color-success)' : 'var(--color-border)'}`,
                     transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                    boxShadow: phone.length === 10 ? '0 8px 24px rgba(16, 185, 129, 0.15)' : 'inset 0 2px 4px rgba(0,0,0,0.02)'
+                    boxShadow: phone.length === 10 ? 'var(--shadow-md)' : 'var(--shadow-sm)'
                   }}>
-                    <span style={{ fontWeight: '800', fontSize: '20px', color: 'var(--color-primary-dark)', marginRight: '16px' }}>+91</span>
+                    <span style={{ fontWeight: '800', fontSize: '20px', color: 'var(--color-text)', marginRight: '16px' }}>+91</span>
                     <div style={{ width: '2px', height: '32px', background: 'var(--color-border)', marginRight: '16px' }}></div>
                     <input 
                       type="tel"
@@ -268,7 +272,7 @@ export default function Login() {
                         <CheckCircle size={24} />
                       </div>
                     )}
-                  </div>
+                  </motion.div>
               ) : (
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', margin: '16px 0' }}>
                   {[0, 1, 2, 3, 4, 5].map(index => {
@@ -305,10 +309,10 @@ export default function Login() {
                         className="glass-card"
                         style={{ 
                           width: '56px', height: '64px', fontSize: '28px', textAlign: 'center', 
-                          fontWeight: '800', color: 'var(--color-primary-dark)', 
-                          border: '2px solid rgba(99, 102, 241, 0.15)', borderRadius: '16px', 
+                          fontWeight: '800', color: 'var(--color-text)', 
+                          border: '2px solid var(--color-border)', borderRadius: '16px', 
                           outline: 'none', transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)', 
-                          background: 'white', boxShadow: '0 8px 16px rgba(0,0,0,0.04)' 
+                          background: 'var(--color-surface)', boxShadow: 'var(--shadow-sm)' 
                         }}
                         autoFocus={index === 0}
                       />
@@ -363,9 +367,9 @@ export default function Login() {
                     style={{ 
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
                       width: '100%', padding: '18px', borderRadius: '20px', border: '2px solid var(--color-border)',
-                      background: 'white', color: 'var(--color-text)', fontWeight: '700', fontSize: '16px',
+                      background: 'var(--color-surface)', color: 'var(--color-text)', fontWeight: '700', fontSize: '16px',
                       cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+                      boxShadow: 'var(--shadow-sm)'
                     }}
                     onMouseEnter={(e) => {
                       const btn = e.currentTarget;
