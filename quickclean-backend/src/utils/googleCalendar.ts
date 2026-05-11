@@ -7,12 +7,11 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
 const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-const auth = new google.auth.JWT(
-  GOOGLE_CLIENT_EMAIL,
-  null as any,
-  GOOGLE_PRIVATE_KEY,
-  SCOPES
-);
+const auth = new google.auth.JWT({
+  email: GOOGLE_CLIENT_EMAIL,
+  key: GOOGLE_PRIVATE_KEY,
+  scopes: SCOPES
+});
 
 export const createCleaningEvent = async (bookingData: {
   id: string;
