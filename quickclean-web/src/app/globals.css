@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #6366F1;
+    --color-primary-dark: #4338CA;
+    --color-secondary: #F59E0B;
+    --color-background: #0F172A;
+    --color-surface: rgba(15, 23, 42, 0.9);
+    --color-text: #FFFFFF;
+    --color-text-muted: #CBD5E1;
+    --color-border: rgba(51, 65, 85, 0.5);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    background-color: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+  
+  .glass-card {
+    background-color: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(51, 65, 85, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    transform: translateY(-4px);
+  }
+
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    font-weight: 700;
+    color: white;
+    transition: all 0.3s ease;
+    background: linear-gradient(to right, #6366F1, #8B5CF6);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-premium:hover {
+    background: linear-gradient(to right, #4F46E5, #7C3AED);
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-premium:active {
+    transform: scale(0.95);
+  }
+
+  .text-gradient {
+    background: linear-gradient(to right, #FFFFFF, #EEF2FF, #CBD5E1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Custom Utilities */
+.animate-glow {
+  box-shadow: 0 0 40px -10px var(--color-primary);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
