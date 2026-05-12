@@ -61,34 +61,44 @@ export default function Checkout() {
           const uRes = await fetch('/api/user/profile', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          const uData = await uRes.json();
           if (uRes.ok) {
-              setUserPoints(uData.points);
-              setUserData({ name: uData.name, phone: uData.phone });
+            const uData = await uRes.json();
+            setUserPoints(uData.points);
+            setUserData({ name: uData.name, phone: uData.phone });
           }
 
-          const res = await fetch(`/api/bookings/${bookingId}/status`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const data = await res.json();
-          if (res.ok) {
-            console.log('💳 Checkout: Booking status data:', data);
-            if (data.service) {
-              console.log('✅ Checkout: Using price from booking document:', data.service.price);
-              setService(data.service);
-            } else {
-              // Fallback to localStorage if API is slow or missing service object
-              const localPrice = localStorage.getItem('lockedPrice');
-              const localName = localStorage.getItem('lockedServiceName');
-              if (localPrice && localName) {
-                console.log('📦 Checkout: Using price from localStorage fallback:', localPrice);
-                setService({ name: localName, price: parseInt(localPrice) });
-              } else {
-                console.log('⚠️ Checkout: Service missing everywhere, falling back to catalog lookup');
-                const sRes = await fetch('/api/services');
+          // PRIORITY 1: Check localStorage for Locked Price (The price user was shown at booking)
+          const localPrice = localStorage.getItem('lockedPrice');
+          const localName = localStorage.getItem('lockedServiceName');
+          
+          if (localPrice && localName) {
+            console.log('📦 Checkout: Using price from localStorage (Locked):', localPrice);
+            setService({ name: localName, price: parseInt(localPrice) });
+          } else {
+            // PRIORITY 2: Fetch from API if no local lock exists
+            let apiData = null;
+            try {
+              const res = await fetch(`/api/bookings/${bookingId}/status`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (res.ok) {
+                apiData = await res.json();
+                console.log('💳 Checkout: Booking status data:', apiData);
+              }
+            } catch (apiErr) {
+              console.error('❌ Checkout: API call failed:', apiErr);
+            }
+
+            if (apiData && apiData.service) {
+              console.log('✅ Checkout: Using price from booking document:', apiData.service.price);
+              setService(apiData.service);
+            } else if (apiData && apiData.serviceId) {
+              console.log('⚠️ Checkout: Service missing, falling back to catalog lookup');
+              const sRes = await fetch('/api/services');
+              if (sRes.ok) {
                 const services = await sRes.json();
-                const found = services.find((s: any) => s.id === data.serviceId);
-                setService(found);
+                const found = services.find((s: any) => s.id === apiData.serviceId);
+                if (found) setService(found);
               }
             }
           }

@@ -281,6 +281,10 @@ export default function Chatbot() {
               
               const newBookingId = docRef.id;
               localStorage.setItem('bookingId', newBookingId);
+              if (bookingData.service) {
+                localStorage.setItem('lockedPrice', bookingData.service.price.toString());
+                localStorage.setItem('lockedServiceName', bookingData.service.name);
+              }
               setPaymentBookingId(newBookingId);
               
               setStep('DONE');
