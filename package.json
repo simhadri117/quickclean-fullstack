@@ -10,6 +10,8 @@
     "dev:cleaner": "npm run dev --prefix quickclean-cleaner",
     "dev:admin": "npm run dev --prefix quickclean-admin",
     "dev": "concurrently -n \"BACKEND,WEB,APP,CLEANER,ADMIN\" -c \"bgBlue,bgGreen,bgMagenta,bgYellow,bgCyan\" \"npm run dev:backend\" \"npm run dev:web\" \"npm run dev:app\" \"npm run dev:cleaner\" \"npm run dev:admin\"",
+    "build:app": "npm run build --prefix quickclean-app",
+    "build": "npm run build:app",
     "install:all": "npm install && npm install --prefix quickclean-backend && npm install --prefix quickclean-web && npm install --prefix quickclean-app && npm install --prefix quickclean-cleaner && npm install --prefix quickclean-admin"
   },
   "devDependencies": {
