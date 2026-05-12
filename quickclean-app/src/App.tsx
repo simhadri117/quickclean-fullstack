@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Suspense, lazy, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { Analytics } from '@vercel/analytics/react';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import Navigation from './components/Navigation';
